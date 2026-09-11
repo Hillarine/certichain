@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard — CertiChain{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: var(--cc-gray-900);">Dashboard</h2>
+            <p class="text-muted mb-0">Vue d'ensemble de vos certificats</p>
+        </div>
+        <a href="{% url 'create_certificate' %}" class="btn btn-cc-primary">
+            <i class="bi bi-plus-lg me-2"></i>Nouveau certificat
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-lg-3 animate-in delay-1">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon blue">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" style="font-size: 1.6rem;">{{ total }}</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 animate-in delay-2">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon green">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" style="font-size: 1.6rem;">{{ registered }}</div>
+                        <div class="stat-label">Enregistrés</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 animate-in delay-3">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon yellow">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" style="font-size: 1.6rem;">{{ pending }}</div>
+                        <div class="stat-label">En attente</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-lg-3 animate-in delay-4">
+            <div class="stat-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="stat-icon red">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-number" style="font-size: 1.6rem;">{{ revoked }}</div>
+                        <div class="stat-label">Révoqués</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blockchain Status -->
+    <div class="card-cc mb-4 animate-in">
+        <div class="card-body d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon {% if blockchain_connected %}green{% else %}red{% endif %}">
+                    <i class="bi bi-{% if blockchain_connected %}link-45deg{% else %}link-45deg{% endif %}"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0">Statut Blockchain</h6>
+                    <span class="small {% if blockchain_connected %}text-success{% else %}text-danger{% endif %}">
+                        {% if blockchain_connected %}
+                            <i class="bi bi-check-circle me-1"></i>Connecté au réseau
+                        {% else %}
+                            <i class="bi bi-x-circle me-1"></i>Non connecté
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            {% if blockchain_connected %}
+            <span class="badge badge-cc badge-success">En ligne</span>
+            {% else %}
+            <span class="badge badge-cc badge-danger">Hors ligne</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Certificates Table -->
+    <div class="card-cc animate-in">
+        <div class="card-body p-0">
+            <div class="d-flex align-items-center justify-content-between p-3 pb-0">
+                <h5 class="fw-bold mb-0">Certificats récents</h5>
+                <span class="small text-muted">{{ total }} certificat{{ total|pluralize }}</span>
+            </div>
+
+            {% if certificates %}
+            <div class="table-responsive">
+                <table class="table table-cc mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Destinataire</th>
+                            <th>Titre</th>
+                            <th>Émetteur</th>
+                            <th>Date</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cert in certificates %}
+                        <tr>
+                            <td>
+                                <code style="color: var(--cc-blue-600); font-weight: 600; font-size: 0.82rem;">
+                                    {{ cert.certificate_id }}
+                                </code>
+                            </td>
+                            <td>
+                                <div class="fw-semibold">{{ cert.recipient_name }}</div>
+                                {% if cert.recipient_email %}
+                                <div class="small text-muted">{{ cert.recipient_email }}</div>
+                                {% endif %}
+                            </td>
+                            <td>{{ cert.title|truncatechars:35 }}</td>
+                            <td class="text-muted">{{ cert.issuer_name|truncatechars:25 }}</td>
+                            <td class="text-muted small">{{ cert.issue_date|date:"d/m/Y" }}</td>
+                            <td>
+                                <span class="badge badge-cc badge-{{ cert.status_display_class }}">
+                                    {% if cert.status == 'registered' %}
+                                        <i class="bi bi-check-circle me-1"></i>
+                                    {% elif cert.status == 'pending' %}
+                                        <i class="bi bi-clock me-1"></i>
+                                    {% elif cert.status == 'revoked' %}
+                                        <i class="bi bi-x-circle me-1"></i>
+                                    {% endif %}
+                                    {{ cert.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="{% url 'certificate_detail' pk=cert.pk %}" 
+                                       class="btn btn-sm btn-cc-outline" style="padding: 0.3rem 0.7rem; font-size: 0.8rem;">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% if cert.status != 'revoked' %}
+                                    <a href="{% url 'revoke_certificate' pk=cert.pk %}" 
+                                       class="btn btn-sm btn-outline-danger" style="padding: 0.3rem 0.7rem; font-size: 0.8rem; border-radius: 8px;">
+                                        <i class="bi bi-x-lg"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: var(--cc-gray-300);"></i>
+                <p class="text-muted mt-3 mb-3">Aucun certificat pour le moment</p>
+                <a href="{% url 'create_certificate' %}" class="btn btn-cc-primary btn-sm">
+                    <i class="bi bi-plus-lg me-1"></i>Créer le premier
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

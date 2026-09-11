@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Créer un certificat — CertiChain{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <a href="{% url 'dashboard' %}" class="text-decoration-none small" style="color: var(--cc-blue-600);">
+                    <i class="bi bi-arrow-left me-1"></i>Retour au dashboard
+                </a>
+                <h2 class="fw-bold mt-2 mb-1" style="color: var(--cc-gray-900);">
+                    <i class="bi bi-plus-circle me-2" style="color: var(--cc-blue-500);"></i>
+                    Créer un certificat
+                </h2>
+                <p class="text-muted">Le certificat sera enregistré sur la blockchain Ethereum</p>
+            </div>
+
+            <!-- Form -->
+            <form method="post" id="createForm">
+                {% csrf_token %}
+
+                <!-- Erreurs globales -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Destinataire -->
+                <div class="card-cc mb-4 animate-in">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3" style="color: var(--cc-blue-700);">
+                            <i class="bi bi-person me-2"></i>Destinataire
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.recipient_name.id_for_label }}">
+                                    Nom complet <span class="text-danger">*</span>
+                                </label>
+                                {{ form.recipient_name }}
+                                {% if form.recipient_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.recipient_name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.recipient_email.id_for_label }}">
+                                    Email
+                                </label>
+                                {{ form.recipient_email }}
+                                {% if form.recipient_email.errors %}
+                                <div class="text-danger small mt-1">{{ form.recipient_email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certificat -->
+                <div class="card-cc mb-4 animate-in delay-1">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3" style="color: var(--cc-blue-700);">
+                            <i class="bi bi-file-earmark-text me-2"></i>Certificat
+                        </h6>
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.title.id_for_label }}">
+                                Titre du certificat <span class="text-danger">*</span>
+                            </label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.description.id_for_label }}">
+                                Description
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Émetteur & Dates -->
+                <div class="card-cc mb-4 animate-in delay-2">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3" style="color: var(--cc-blue-700);">
+                            <i class="bi bi-building me-2"></i>Émetteur & Dates
+                        </h6>
+                        <div class="mb-3">
+                            <label class="form-label" for="{{ form.issuer_name.id_for_label }}">
+                                Organisme émetteur <span class="text-danger">*</span>
+                            </label>
+                            {{ form.issuer_name }}
+                            {% if form.issuer_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.issuer_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.issue_date.id_for_label }}">
+                                    Date d'émission <span class="text-danger">*</span>
+                                </label>
+                                {{ form.issue_date }}
+                                {% if form.issue_date.errors %}
+                                <div class="text-danger small mt-1">{{ form.issue_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ form.expiry_date.id_for_label }}">
+                                    Date d'expiration <span class="text-muted small">(optionnel)</span>
+                                </label>
+                                {{ form.expiry_date }}
+                                {% if form.expiry_date.errors %}
+                                <div class="text-danger small mt-1">{{ form.expiry_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info blockchain -->
+                <div class="card-cc mb-4 animate-in delay-3" style="background: var(--cc-blue-50); border-color: var(--cc-blue-200);">
+                    <div class="card-body">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-info-circle" style="font-size: 1.3rem; color: var(--cc-blue-500); margin-top: 2px;"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1" style="color: var(--cc-blue-800);">Enregistrement Blockchain</h6>
+                                <p class="mb-0 small" style="color: var(--cc-blue-600);">
+                                    À la soumission, une empreinte SHA-256 du certificat sera générée et enregistrée 
+                                    de manière immuable sur la blockchain Ethereum via un smart contract.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="d-flex gap-3 animate-in delay-4">
+                    <button type="submit" class="btn btn-cc-primary btn-lg flex-grow-1" id="submitBtn">
+                        <i class="bi bi-shield-check me-2"></i>
+                        Créer et enregistrer sur la blockchain
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="btn btn-cc-outline btn-lg">
+                        Annuler
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('createForm').addEventListener('submit', function() {
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enregistrement en cours...';
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Résultat de vérification — CertiChain{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+
+            {% if certificate and certificate.status == 'registered' %}
+            <!-- CERTIFICAT VALIDE -->
+            <div class="verify-result-card card-cc animate-in" style="border: none; overflow: hidden;">
+                <div class="verify-header-valid text-center text-white p-4">
+                    <i class="bi bi-patch-check-fill" style="font-size: 3.5rem;"></i>
+                    <h3 class="fw-bold mt-3 mb-1">Certificat Authentique</h3>
+                    <p class="mb-0" style="color: rgba(255,255,255,0.85);">
+                        Ce certificat est valide et vérifié sur la blockchain
+                    </p>
+                </div>
+                <div class="p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="stat-label mb-1">Identifiant</div>
+                            <code style="font-size: 1rem; color: var(--cc-blue-600); font-weight: 700;">
+                                {{ certificate.certificate_id }}
+                            </code>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">
+                                <i class="bi bi-person me-1"></i>Destinataire
+                            </div>
+                            <div class="fw-semibold">{{ certificate.recipient_name }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">
+                                <i class="bi bi-building me-1"></i>Émetteur
+                            </div>
+                            <div class="fw-semibold">{{ certificate.issuer_name }}</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="stat-label mb-1">
+                                <i class="bi bi-award me-1"></i>Titre
+                            </div>
+                            <div class="fw-semibold" style="font-size: 1.05rem;">{{ certificate.title }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">Date d'émission</div>
+                            <div class="fw-semibold">{{ certificate.issue_date|date:"d/m/Y" }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">Expiration</div>
+                            <div class="fw-semibold">
+                                {% if certificate.expiry_date %}
+                                    {{ certificate.expiry_date|date:"d/m/Y" }}
+                                {% else %}
+                                    Aucune
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Blockchain proof -->
+                        <div class="col-12 mt-3">
+                            <div class="p-3" style="background: var(--cc-gray-50); border-radius: 12px;">
+                                <h6 class="fw-bold mb-2" style="font-size: 0.85rem;">
+                                    <i class="bi bi-link-45deg me-1" style="color: var(--cc-blue-500);"></i>
+                                    Preuve Blockchain
+                                </h6>
+                                <div class="mb-2">
+                                    <div class="stat-label mb-1" style="font-size: 0.75rem;">Hash du certificat</div>
+                                    <div class="hash-display" style="font-size: 0.72rem;">{{ certificate.certificate_hash }}</div>
+                                </div>
+                                {% if certificate.tx_hash %}
+                                <div>
+                                    <div class="stat-label mb-1" style="font-size: 0.75rem;">Transaction</div>
+                                    <div class="hash-display" style="font-size: 0.72rem;">{{ certificate.tx_hash }}</div>
+                                </div>
+                                {% endif %}
+
+                                {% if blockchain_verified %}
+                                <div class="mt-2 d-flex align-items-center gap-2">
+                                    <span class="chain-dot online"></span>
+                                    <span class="small fw-semibold" style="color: #16a34a;">Confirmé on-chain</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif certificate and certificate.status == 'revoked' %}
+            <!-- CERTIFICAT RÉVOQUÉ -->
+            <div class="verify-result-card card-cc animate-in" style="border: none; overflow: hidden;">
+                <div class="verify-header-invalid text-center text-white p-4">
+                    <i class="bi bi-x-circle-fill" style="font-size: 3.5rem;"></i>
+                    <h3 class="fw-bold mt-3 mb-1">Certificat Révoqué</h3>
+                    <p class="mb-0" style="color: rgba(255,255,255,0.85);">
+                        Ce certificat a été révoqué et n'est plus valide
+                    </p>
+                </div>
+                <div class="p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <code style="font-size: 1rem; color: var(--cc-blue-600); font-weight: 700;">
+                                {{ certificate.certificate_id }}
+                            </code>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">Destinataire</div>
+                            <div class="fw-semibold">{{ certificate.recipient_name }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">Titre</div>
+                            <div class="fw-semibold">{{ certificate.title }}</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3" style="background: #fee2e2; border-radius: 10px;">
+                                <div class="stat-label mb-1 text-danger">Raison de la révocation</div>
+                                <div>{{ certificate.revocation_reason }}</div>
+                                <div class="small text-muted mt-1">
+                                    Révoqué le {{ certificate.revoked_at|date:"d/m/Y à H:i" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% elif certificate and certificate.status == 'pending' %}
+            <!-- CERTIFICAT EN ATTENTE -->
+            <div class="verify-result-card card-cc animate-in" style="border: none; overflow: hidden;">
+                <div class="text-center text-white p-4" style="background: linear-gradient(135deg, #d97706, #b45309);">
+                    <i class="bi bi-clock-fill" style="font-size: 3.5rem;"></i>
+                    <h3 class="fw-bold mt-3 mb-1">En attente</h3>
+                    <p class="mb-0" style="color: rgba(255,255,255,0.85);">
+                        Ce certificat n'a pas encore été enregistré sur la blockchain
+                    </p>
+                </div>
+                <div class="p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">Destinataire</div>
+                            <div class="fw-semibold">{{ certificate.recipient_name }}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="stat-label mb-1">Titre</div>
+                            <div class="fw-semibold">{{ certificate.title }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% else %}
+            <!-- CERTIFICAT NON TROUVÉ -->
+            <div class="verify-result-card card-cc animate-in" style="border: none; overflow: hidden;">
+                <div class="verify-header-notfound text-center text-white p-4">
+                    <i class="bi bi-question-circle-fill" style="font-size: 3.5rem;"></i>
+                    <h3 class="fw-bold mt-3 mb-1">Certificat introuvable</h3>
+                    <p class="mb-0" style="color: rgba(255,255,255,0.85);">
+                        Aucun certificat ne correspond à cet identifiant
+                    </p>
+                </div>
+                <div class="p-4 text-center">
+                    <p class="text-muted mb-1">Identifiant recherché :</p>
+                    <code style="font-size: 1.1rem; color: var(--cc-gray-600); font-weight: 700;">
+                        {{ certificate_id }}
+                    </code>
+                    <p class="text-muted mt-3 small">
+                        Vérifiez que l'identifiant est correct et réessayez.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="d-flex gap-3 mt-4 justify-content-center animate-in delay-1">
+                <a href="{% url 'verify_certificate' %}" class="btn btn-cc-primary">
+                    <i class="bi bi-search me-2"></i>Nouvelle vérification
+                </a>
+                <a href="{% url 'home' %}" class="btn btn-cc-outline">
+                    <i class="bi bi-house me-2"></i>Accueil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

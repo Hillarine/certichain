@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Vérifier un certificat — CertiChain{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="text-center mb-4 animate-in">
+                <div class="stat-icon blue mx-auto mb-3" style="width: 64px; height: 64px; font-size: 1.5rem;">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h2 class="fw-bold" style="color: var(--cc-gray-900);">Vérifier un certificat</h2>
+                <p class="text-muted">
+                    Entrez l'identifiant du certificat pour vérifier son authenticité sur la blockchain
+                </p>
+            </div>
+
+            <div class="card-cc animate-in delay-1">
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label" for="{{ form.certificate_id.id_for_label }}">
+                                <i class="bi bi-hash me-1"></i>{{ form.certificate_id.label }}
+                            </label>
+                            {{ form.certificate_id }}
+                            {% if form.certificate_id.errors %}
+                            <div class="text-danger small mt-1">{{ form.certificate_id.errors.0 }}</div>
+                            {% endif %}
+                            <div class="form-text mt-2">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Format : CERT-XXXX-XXXXXX
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-cc-primary btn-lg w-100">
+                            <i class="bi bi-shield-check me-2"></i>Vérifier l'authenticité
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- QR Code option -->
+            <div class="card-cc mt-4 animate-in delay-2">
+                <div class="card-body p-4 text-center">
+                    <i class="bi bi-qr-code" style="font-size: 2rem; color: var(--cc-blue-400);"></i>
+                    <h6 class="fw-bold mt-2 mb-1">Vous avez un QR code ?</h6>
+                    <p class="small text-muted mb-0">
+                        Scannez le QR code présent sur le certificat pour accéder directement à la page de vérification.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
